@@ -16,9 +16,13 @@ jobs:
     steps:
       - name: 📥 Baixar código
         uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: 🟢 Configurar Node.js 20
         uses: actions/setup-node@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           node-version: "20"
           cache: "npm"
@@ -44,6 +48,8 @@ jobs:
     steps:
       - name: 📥 Baixar código
         uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: 🐳 Build da imagem do backend
         run: docker build -t monitores-backend:ci ./backend
@@ -59,6 +65,8 @@ jobs:
     steps:
       - name: 📥 Baixar código
         uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: 📋 Criar .env a partir do .env.example
         run: cp .env.example .env
@@ -75,6 +83,8 @@ jobs:
     steps:
       - name: 📥 Baixar código
         uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: 📋 Criar .env
         run: cp .env.example .env
@@ -82,15 +92,27 @@ jobs:
       - name: 🚀 Subir stack com Docker Compose
         run: docker compose up --build -d
 
-      - name: ⏳ Aguardar serviços ficarem saudáveis
+      - name: ⏳ Aguardar banco de dados ficar saudável
+        run: |
+          echo "Aguardando MySQL..."
+          for i in $(seq 1 60); do
+            if docker compose exec -T db mysqladmin ping -h localhost -u root -proot --silent 2>/dev/null; then
+              echo "✔ Banco disponível!"
+              break
+            fi
+            echo "Tentativa $i/60..."
+            sleep 5
+          done
+
+      - name: ⏳ Aguardar backend ficar saudável
         run: |
           echo "Aguardando backend..."
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:3001/health; then
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3001/health > /dev/null 2>&1; then
               echo "✔ Backend disponível!"
               break
             fi
-            echo "Tentativa $i/30..."
+            echo "Tentativa $i/60..."
             sleep 5
           done
 
