@@ -1,0 +1,121 @@
+name: CI — Indicação de Monitores
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+
+  # ─── JOB 1: Lint e Testes do Backend ──────────────────────────
+  backend-test:
+    name: 🧪 Backend — Lint + Testes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Baixar código
+        uses: actions/checkout@v4
+
+      - name: 🟢 Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: 📦 Instalar dependências do backend
+        working-directory: backend
+        run: npm ci
+
+      - name: 🔍 Lint do backend (bloqueia em erros)
+        working-directory: backend
+        run: npm run lint
+
+      - name: 🧪 Executar testes do backend
+        working-directory: backend
+        run: npm test
+
+  # ─── JOB 2: Build das imagens Docker ─────────────────────────
+  docker-build:
+    name: 🐳 Docker — Build das Imagens
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Baixar código
+        uses: actions/checkout@v4
+
+      - name: 🐳 Build da imagem do backend
+        run: docker build -t monitores-backend:ci ./backend
+
+      - name: 🐳 Build da imagem do frontend
+        run: docker build -t monitores-frontend:ci ./frontend
+
+  # ─── JOB 3: Validação do Docker Compose ──────────────────────
+  compose-validate:
+    name: 🧱 Docker Compose — Validação
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Baixar código
+        uses: actions/checkout@v4
+
+      - name: 📋 Criar .env a partir do .env.example
+        run: cp .env.example .env
+
+      - name: ✅ Validar sintaxe do docker-compose.yml
+        run: docker compose config
+
+  # ─── JOB 4: Integração (sobe a stack e testa health) ─────────
+  integration:
+    name: 🔗 Integração — Stack completa
+    runs-on: ubuntu-latest
+    needs: [backend-test, docker-build, compose-validate]
+
+    steps:
+      - name: 📥 Baixar código
+        uses: actions/checkout@v4
+
+      - name: 📋 Criar .env
+        run: cp .env.example .env
+
+      - name: 🚀 Subir stack com Docker Compose
+        run: docker compose up --build -d
+
+      - name: ⏳ Aguardar serviços ficarem saudáveis
+        run: |
+          echo "Aguardando backend..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3001/health; then
+              echo "✔ Backend disponível!"
+              break
+            fi
+            echo "Tentativa $i/30..."
+            sleep 5
+          done
+
+      - name: 🩺 Testar rota de health do backend
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:3001/health)
+          echo "HTTP Status: $STATUS"
+          [ "$STATUS" = "200" ] || exit 1
+
+      - name: 🩺 Testar endpoint de indicações
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:3001/api/indicacoes)
+          echo "HTTP Status: $STATUS"
+          [ "$STATUS" = "200" ] || exit 1
+
+      - name: 🩺 Testar frontend (Nginx)
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:8080)
+          echo "HTTP Status: $STATUS"
+          [ "$STATUS" = "200" ] || exit 1
+
+      - name: 📜 Logs dos containers (em caso de falha)
+        if: failure()
+        run: docker compose logs
+
+      - name: 🛑 Derrubar stack
+        if: always()
+        run: docker compose down -v

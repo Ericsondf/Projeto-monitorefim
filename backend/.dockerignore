@@ -1,0 +1,21 @@
+# Dependências instaladas localmente — serão reinstaladas dentro do container
+node_modules/
+npm-debug.log*
+
+# Variáveis de ambiente — NUNCA copiar para a imagem
+.env
+
+# Cobertura de testes e logs
+coverage/
+.nyc_output
+*.log
+
+# Ferramentas de editor e sistema operacional
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Testes — não precisam ir para a imagem de produção
+tests/

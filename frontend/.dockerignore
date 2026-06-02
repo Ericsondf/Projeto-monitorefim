@@ -1,0 +1,12 @@
+# Não copiar node_modules caso existam localmente
+node_modules/
+
+# Variáveis de ambiente
+.env
+
+# Logs e sistema operacional
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

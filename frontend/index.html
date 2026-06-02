@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MonitorIA — Sistema de Indicação de Monitores</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+
+  <div id="overlay" class="overlay hidden"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-mark">M</span>
+      <span class="logo-text">Monitor<em>IA</em></span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-view="dashboard">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-btn" data-view="indicacoes">
+        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        Indicações
+      </button>
+      <button class="nav-btn" data-view="nova">
+        <svg viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        Nova Indicação
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <span>PBL DevOps • 2025</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content" id="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="status-dot" id="statusDot" title="Verificando API..."></div>
+        <span class="status-label" id="statusLabel">Conectando...</span>
+      </div>
+    </header>
+
+    <!-- VIEWS -->
+    <div class="view-container">
+
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-dashboard">
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card stat-total">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+              <span class="stat-value" id="statTotal">—</span>
+              <span class="stat-label">Total de Indicações</span>
+            </div>
+          </div>
+          <div class="stat-card stat-pendente">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-info">
+              <span class="stat-value" id="statPendente">—</span>
+              <span class="stat-label">Pendentes</span>
+            </div>
+          </div>
+          <div class="stat-card stat-aprovado">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+              <span class="stat-value" id="statAprovado">—</span>
+              <span class="stat-label">Aprovadas</span>
+            </div>
+          </div>
+          <div class="stat-card stat-recusado">
+            <div class="stat-icon">❌</div>
+            <div class="stat-info">
+              <span class="stat-value" id="statRecusado">—</span>
+              <span class="stat-label">Recusadas</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-section">
+          <div class="section-header">
+            <h2>Indicações Recentes</h2>
+            <button class="btn-link" data-view="indicacoes">Ver todas →</button>
+          </div>
+          <div id="recentList" class="cards-list"></div>
+        </div>
+      </section>
+
+      <!-- LISTA DE INDICAÇÕES -->
+      <section class="view" id="view-indicacoes">
+        <div class="toolbar">
+          <div class="filter-group">
+            <label>Filtrar por status:</label>
+            <div class="filter-pills">
+              <button class="filter-pill active" data-status="">Todos</button>
+              <button class="filter-pill" data-status="pendente">Pendentes</button>
+              <button class="filter-pill" data-status="aprovado">Aprovados</button>
+              <button class="filter-pill" data-status="recusado">Recusados</button>
+            </div>
+          </div>
+          <input class="search-input" id="searchInput" type="text" placeholder="🔍  Buscar por nome, disciplina..." />
+        </div>
+        <div id="listaIndicacoes" class="cards-list"></div>
+      </section>
+
+      <!-- NOVA INDICAÇÃO -->
+      <section class="view" id="view-nova">
+        <div class="form-wrapper">
+          <div class="form-header">
+            <h2>Nova Indicação de Monitor</h2>
+            <p>Preencha os dados abaixo para registrar a indicação de um aluno como monitor.</p>
+          </div>
+          <div class="form-card" id="formCard">
+            <div class="form-group">
+              <label for="fProfessor">Professor <span class="required">*</span></label>
+              <input type="text" id="fProfessor" placeholder="Nome completo do professor" />
+            </div>
+            <div class="form-group">
+              <label for="fAluno">Aluno Indicado <span class="required">*</span></label>
+              <input type="text" id="fAluno" placeholder="Nome completo do aluno" />
+            </div>
+            <div class="form-group">
+              <label for="fDisciplina">Disciplina <span class="required">*</span></label>
+              <input type="text" id="fDisciplina" placeholder="Ex: Algoritmos e Estruturas de Dados" />
+            </div>
+            <div class="form-group full">
+              <label for="fJustificativa">Justificativa</label>
+              <textarea id="fJustificativa" rows="4" placeholder="Descreva os motivos da indicação..."></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-ghost" id="btnLimpar">Limpar</button>
+              <button class="btn btn-primary" id="btnSalvar">
+                <span>Salvar Indicação</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- MODAL DE DETALHES / EDIÇÃO -->
+  <div class="modal hidden" id="modal" role="dialog" aria-modal="true">
+    <div class="modal-box" id="modalBox">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="src/api.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
