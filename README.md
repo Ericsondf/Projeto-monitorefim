@@ -8,8 +8,8 @@
 ## 🚀 Executar em 3 comandos
 
 ```bash
-git clone <url-do-repositorio>
-cd projeto-monitores
+git clone https://github.com/Ericsondf/Projeto-monitorefim
+cd projeto-monitoresfim
 cp .env.example .env
 docker compose up --build
 ```
@@ -89,10 +89,9 @@ projeto-monitores/
 
 ```json
 {
-  "professor": "Prof. João Silva",
-  "aluno": "Maria Oliveira",
+  "professor": "Prof. Daniel Souza",
+  "alunos": "Ericson Nascimento, Arthur De Oliveira Tome, Guilherme frança, Joao Pedro Pereira nery",
   "disciplina": "Algoritmos e Estruturas de Dados",
-  "justificativa": "Excelente desempenho e habilidade de comunicação."
 }
 ```
 
